@@ -1,4 +1,4 @@
-pub fn binary_fn(array: []const u32, to_find: u32) bool {
+pub fn binaryFn(array: []const u32, to_find: u32) bool {
     var lo: usize = 0;
     var hi: usize = array.len;
     var middle: usize = 0;
