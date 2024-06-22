@@ -1,6 +1,6 @@
 const expectEqual = @import("std").testing.expectEqual;
 const tree = @import("./tree.zig").tree;
-const bt_in_order = @import("../kata/bt_in_order.zig").bt_in_order;
+const bt_pre_order = @import("../kata/bt_pre_order.zig").bt_pre_order;
 
 test "In order" {
     var array = [_]u32{
@@ -27,5 +27,5 @@ test "In order" {
         45,
         100,
     };
-    expectEqual(bt_in_order(&array, tree), &expected);
+    expectEqual(bt_pre_order(&array, tree), &expected);
 }
