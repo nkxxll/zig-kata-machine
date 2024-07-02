@@ -6,4 +6,5 @@ comptime {
     _ = @import("./test/test_binary_search.zig");
     _ = @import("./test/test_linear_search.zig");
     _ = @import("./test/test_two_cristal_balls.zig");
+    _ = @import("./test/test_bt_in_order.zig");
 }
