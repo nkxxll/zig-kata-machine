@@ -1,4 +1,4 @@
-const solve_maze = @import("../kata/maze_solver.zig");
+const solve_maze = @import("../kata/maze_solver.zig").solve_maze;
 const Point = @import("../kata/maze_solver.zig").Point;
 const std = @import("std");
 
@@ -31,6 +31,6 @@ test "maze solver" {
     };
 
     // there is only one path through
-    const result = solve_maze(maze, "x", .{ .x = 10, .y = 0 }, .{ .x = 1, .y = 5 }, std.testing.allocator);
-    try std.testing.expectEqualSlices(Point, mazeResult, result);
+    const result = try solve_maze(&maze, 'x', .{ .x = 10, .y = 0 }, .{ .x = 1, .y = 5 }, std.testing.allocator);
+    try std.testing.expectEqualSlices(Point, &mazeResult, result);
 }
