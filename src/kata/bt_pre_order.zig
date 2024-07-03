@@ -1,9 +1,18 @@
+const std = @import("std");
 const BinaryNode = @import("../test/tree.zig").BinaryNode;
 
-fn walk(array: []u32, current_root: ?*BinaryNode) void {}
+fn walk(array_list: *std.ArrayList(u32), tree: ?*const BinaryNode) !void {
+    if (tree == null) {
+        return;
+    }
 
-/// array is length of nodesn in tree
-pub fn bt_in_order(array: []u32, tree_root: ?BinaryNode) []u32 {
-    walk(&array, tree_root, 0);
-    return array;
+    try array_list.append(tree.?.value);
+    try walk(array_list, tree.?.left);
+    try walk(array_list, tree.?.right);
+}
+
+pub fn bt_pre_order(array_list: *std.ArrayList(u32), tree: *const BinaryNode) void {
+    walk(array_list, tree) catch {
+        unreachable;
+    };
 }
