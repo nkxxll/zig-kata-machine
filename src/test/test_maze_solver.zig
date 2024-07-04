@@ -31,6 +31,7 @@ test "maze solver" {
     };
 
     // there is only one path through
-    const result = try solve_maze(&maze, 'x', .{ .x = 10, .y = 0 }, .{ .x = 1, .y = 5 }, std.testing.allocator);
+    const result = try solve_maze(maze, 'x', .{ .x = 10, .y = 0 }, .{ .x = 1, .y = 5 }, std.testing.allocator);
+    defer std.testing.allocator.free(result);
     try std.testing.expectEqualSlices(Point, &mazeResult, result);
 }
