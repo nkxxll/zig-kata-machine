@@ -5,15 +5,15 @@ fn Node(comptime T: type) type {
     return struct {
         const Self = @This();
         value: T,
-        next: ?*Self,
-        prev: ?*Self,
+        next: ?*Self(T),
+        prev: ?*Self(T),
 
-        pub fn init(value: T, prev: ?*Self, next: ?*Self) Self {
-            return Self{
-                .value = value,
-                .next = next,
-                .prev = prev,
-            };
+        pub fn init(value: T, prev: ?*Self, next: ?*Self, allocator: Allocator) !Self(T) {
+            var s: *Node(T) = try allocator.create(Self);
+            s.value = value;
+            s.prev = prev;
+            s.next = next;
+            return s;
         }
     };
 }
@@ -37,8 +37,7 @@ pub fn DoubleLinkedList(comptime T: type) type {
 
         pub fn append(self: *Self, item: T) !void {
             // todo: use allocator.create alloc in init
-            const node = (try self.allocator.alloc(Node(T), 1))[0];
-            node.init(item, null, null);
+            var node = try Node(T).init(item, null, null, self.allocator);
             if (self.head == null and self.tail == null and self.length == 0) {
                 self.head = &node;
                 self.tail = &node;
@@ -46,14 +45,13 @@ pub fn DoubleLinkedList(comptime T: type) type {
                 return;
             }
             node.prev = self.tail;
-            self.tail.?.next = node;
-            self.tail = node;
+            self.tail.?.next = &node;
+            self.tail = &node;
             self.length += 1;
         }
 
         pub fn prepend(self: *Self, item: T) !void {
-            var node = (try self.allocator.alloc(Node(T), 1))[0];
-            node.init(item, null, null);
+            var node = try Node(T).init(item, null, null, self.allocator);
             if (self.head == null and self.tail == null and self.length == 0) {
                 self.head = &node;
                 self.tail = &node;
@@ -61,8 +59,8 @@ pub fn DoubleLinkedList(comptime T: type) type {
                 return;
             }
             node.next = self.head;
-            self.head.?.prev = node;
-            self.head = node;
+            self.head.prev = &node;
+            self.head = &node;
             self.length += 1;
         }
 
@@ -126,14 +124,15 @@ pub fn DoubleLinkedList(comptime T: type) type {
 
         /// Release all allocated memory.
         pub fn deinit(self: Self) void {
-            while (self.head != null) {
-                if (self.head.next == null) {
-                    self.allocator.free(self.head);
+            var current: ?*Node(T) = self.head;
+            while (current != null) {
+                if (!current.?.next) {
+                    self.allocator.free(current);
                     return;
                 }
-                self.head = self.head.?.next;
-                self.allocator.free(self.head.?.prev);
-                self.head.prev = null;
+                current = current.?.next;
+                self.allocator.free(current.?.prev);
+                current.?.prev = null;
             }
         }
     };
