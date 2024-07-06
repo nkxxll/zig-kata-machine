@@ -108,7 +108,7 @@ pub fn DoubleLinkedList(comptime T: type) type {
                         current.next.?.prev = current.prev;
                     }
                     self.length -= 1;
-                    self.allocator.free(current);
+                    self.allocator.destroy(current);
                     return val;
                 }
             }
@@ -136,7 +136,7 @@ pub fn DoubleLinkedList(comptime T: type) type {
             }
             current.next.?.prev = tmp;
             self.length -= 1;
-            self.allocator.free(current);
+            self.allocator.destroy(current);
             return val;
         }
 
@@ -148,12 +148,12 @@ pub fn DoubleLinkedList(comptime T: type) type {
             var current: *Node(T) = self.head.?;
             while (true) {
                 if (current.next == null) {
-                    self.allocator.free(current);
+                    self.allocator.destroy(current);
                     return;
                 }
-                current = current.next.?;
-                self.allocator.free(current.prev.?);
-                current.prev = null;
+                const tmp = current.next.?;
+                self.allocator.destroy(current);
+                current = tmp;
             }
         }
     };
