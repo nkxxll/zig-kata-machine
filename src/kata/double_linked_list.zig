@@ -5,16 +5,8 @@ fn Node(comptime T: type) type {
     return struct {
         const Self = @This();
         value: T,
-        next: ?*Self(T),
-        prev: ?*Self(T),
-
-        pub fn init(value: T, prev: ?*Self, next: ?*Self, allocator: Allocator) !Self(T) {
-            var s: *Node(T) = try allocator.create(Self);
-            s.value = value;
-            s.prev = prev;
-            s.next = next;
-            return s;
-        }
+        next: ?*Self,
+        prev: ?*Self,
     };
 }
 
@@ -34,33 +26,38 @@ pub fn DoubleLinkedList(comptime T: type) type {
                 .allocator = allocator,
             };
         }
+        pub fn createNode(self: Self) !*Node(T) {
+            return try self.allocator.create(Node(T));
+        }
 
         pub fn append(self: *Self, item: T) !void {
             // todo: use allocator.create alloc in init
-            var node = try Node(T).init(item, null, null, self.allocator);
+            var node = try self.createNode();
+            node.value = item;
             if (self.head == null and self.tail == null and self.length == 0) {
-                self.head = &node;
-                self.tail = &node;
+                self.head = node;
+                self.tail = node;
                 self.length += 1;
                 return;
             }
             node.prev = self.tail;
-            self.tail.?.next = &node;
-            self.tail = &node;
+            self.tail.?.next = node;
+            self.tail = node;
             self.length += 1;
         }
 
         pub fn prepend(self: *Self, item: T) !void {
-            var node = try Node(T).init(item, null, null, self.allocator);
+            var node = try self.createNode();
+            node.value = item;
             if (self.head == null and self.tail == null and self.length == 0) {
-                self.head = &node;
-                self.tail = &node;
+                self.head = node;
+                self.tail = node;
                 self.length += 1;
                 return;
             }
             node.next = self.head;
-            self.head.prev = &node;
-            self.head = &node;
+            self.head.?.prev = node;
+            self.head = node;
             self.length += 1;
         }
 
@@ -70,25 +67,46 @@ pub fn DoubleLinkedList(comptime T: type) type {
                 return null;
             }
             // set item to head
-            var item: ?*Node(T) = self.head;
+            var item: *Node(T) = self.head.?;
             for (0..index) |_| {
-                item = item.next;
-                // if next item is out of range return null
                 if (item.next == null) {
                     return null;
                 }
+                item = item.next.?;
             }
-            return item.?.value;
+            return item.value;
         }
 
         pub fn remove(self: *Self, item: T) ?T {
-            var current: ?*Node(T) = self.head;
-            while (current != null) : (current = current.next) {
-                const val = current.?.value;
+            if (self.head == null) {
+                return null;
+            }
+            var current: *Node(T) = self.head.?;
+            while (true) {
+                const val = current.value;
                 if (val == item) {
-                    const tmp = current.prev;
-                    current.prev = current.next;
-                    current.next.prev = tmp;
+                    if (current == self.head) {
+                        if (current.next != null) {
+                            current.next.?.prev = null;
+                            self.head = current.next.?;
+                        } else {
+                            self.head = null;
+                            self.tail = null;
+                        }
+                    }
+                    if (current == self.tail) {
+                        if (current.prev == null) {
+                            current.prev.?.next = null;
+                            self.tail = current.prev;
+                        } else {
+                            self.head = null;
+                            self.tail = null;
+                        }
+                    }
+                    if (current.prev != null and current.next != null) {
+                        current.prev.?.next = current.next;
+                        current.next.?.prev = current.prev;
+                    }
                     self.length -= 1;
                     self.allocator.free(current);
                     return val;
@@ -98,25 +116,25 @@ pub fn DoubleLinkedList(comptime T: type) type {
         }
         pub fn removeAt(self: *Self, index: usize) ?T {
             // if there is nothing return null
+            // if there is nothing return null
             if (self.head == null) {
                 return null;
             }
             // set current to head
-            var current: ?*Node(T) = self.head;
+            var current: *Node(T) = self.head.?;
             for (0..index) |_| {
-                current = current.next;
-                // if next current is out of range return null
-                if (current == null) {
+                if (current.next == null) {
                     return null;
                 }
+                current = current.next.?;
             }
             const tmp = current.prev;
-            const val = current.?.value;
+            const val = current.value;
             current.prev = current.next;
             if (current.next == null) {
                 return val;
             }
-            current.next.prev = tmp;
+            current.next.?.prev = tmp;
             self.length -= 1;
             self.allocator.free(current);
             return val;
@@ -124,15 +142,18 @@ pub fn DoubleLinkedList(comptime T: type) type {
 
         /// Release all allocated memory.
         pub fn deinit(self: Self) void {
-            var current: ?*Node(T) = self.head;
-            while (current != null) {
-                if (!current.?.next) {
+            if (self.head == null and self.tail == null) {
+                return;
+            }
+            var current: *Node(T) = self.head.?;
+            while (true) {
+                if (current.next == null) {
                     self.allocator.free(current);
                     return;
                 }
-                current = current.?.next;
-                self.allocator.free(current.?.prev);
-                current.?.prev = null;
+                current = current.next.?;
+                self.allocator.free(current.prev.?);
+                current.prev = null;
             }
         }
     };
