@@ -136,7 +136,6 @@ pub fn DoubleLinkedList(comptime T: type) type {
         }
         pub fn removeAt(self: *Self, index: usize) ?T {
             // if there is nothing return null
-            // if there is nothing return null
             if (self.head == null) {
                 return null;
             }
@@ -144,17 +143,21 @@ pub fn DoubleLinkedList(comptime T: type) type {
             var current: *Node(T) = self.head.?;
             for (0..index) |_| {
                 if (current.next == null) {
+                    print("should not happen", .{});
                     return null;
                 }
                 current = current.next.?;
             }
-            const tmp = current.prev;
             const val = current.value;
-            current.prev = current.next;
-            if (current.next == null) {
-                return val;
+
+            if (current.prev != null) {
+                const prev = current.prev.?;
+                prev.next = current.next;
             }
-            current.next.?.prev = tmp;
+            if (current.next != null) {
+                const next = current.next.?;
+                next.prev = current.prev;
+            }
             self.length -= 1;
             self.allocator.destroy(current);
             return val;
