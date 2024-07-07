@@ -1,5 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const print = std.debug.print;
 
 fn Node(comptime T: type) type {
     return struct {
@@ -26,14 +27,34 @@ pub fn DoubleLinkedList(comptime T: type) type {
                 .allocator = allocator,
             };
         }
-        pub fn createNode(self: Self) !*Node(T) {
-            return try self.allocator.create(Node(T));
+        pub fn createNode(self: Self, value: T) !*Node(T) {
+            var node = try self.allocator.create(Node(T));
+            node.value = value;
+            node.next = null;
+            node.prev = null;
+            return node;
+        }
+
+        pub fn debug(self: Self) void {
+            print("start debug print: ", .{});
+            if (self.head == null) {
+                print("the list is empty len {?} head {?} tail {?}", .{ self.length, self.head, self.tail });
+            } else {
+                var current: *Node(T) = self.head.?;
+                while (true) {
+                    print("{?}, ", .{current.value});
+                    if (current.next == null) {
+                        break;
+                    }
+                    current = current.next.?;
+                }
+            }
+            print(" list end\n", .{});
         }
 
         pub fn append(self: *Self, item: T) !void {
             // todo: use allocator.create alloc in init
-            var node = try self.createNode();
-            node.value = item;
+            var node = try self.createNode(item);
             if (self.head == null and self.tail == null and self.length == 0) {
                 self.head = node;
                 self.tail = node;
@@ -47,8 +68,7 @@ pub fn DoubleLinkedList(comptime T: type) type {
         }
 
         pub fn prepend(self: *Self, item: T) !void {
-            var node = try self.createNode();
-            node.value = item;
+            var node = try self.createNode(item);
             if (self.head == null and self.tail == null and self.length == 0) {
                 self.head = node;
                 self.tail = node;
