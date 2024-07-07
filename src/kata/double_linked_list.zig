@@ -105,32 +105,26 @@ pub fn DoubleLinkedList(comptime T: type) type {
             while (true) {
                 const val = current.value;
                 if (val == item) {
-                    if (current == self.head) {
-                        if (current.next != null) {
-                            current.next.?.prev = null;
-                            self.head = current.next.?;
-                        } else {
-                            self.head = null;
-                            self.tail = null;
-                        }
+                    if (current.prev != null) {
+                        const prev = current.prev.?;
+                        prev.next = current.next;
+                    } else {
+                        self.head = current.next;
                     }
-                    if (current == self.tail) {
-                        if (current.prev == null) {
-                            current.prev.?.next = null;
-                            self.tail = current.prev;
-                        } else {
-                            self.head = null;
-                            self.tail = null;
-                        }
-                    }
-                    if (current.prev != null and current.next != null) {
-                        current.prev.?.next = current.next;
-                        current.next.?.prev = current.prev;
+                    if (current.next != null) {
+                        const next = current.next.?;
+                        next.prev = current.prev;
+                    } else {
+                        self.tail = current.prev;
                     }
                     self.length -= 1;
                     self.allocator.destroy(current);
                     return val;
                 }
+                if (current.next == null) {
+                    break;
+                }
+                current = current.next.?;
             }
             return null;
         }
@@ -153,10 +147,14 @@ pub fn DoubleLinkedList(comptime T: type) type {
             if (current.prev != null) {
                 const prev = current.prev.?;
                 prev.next = current.next;
+            } else {
+                self.head = current.next;
             }
             if (current.next != null) {
                 const next = current.next.?;
                 next.prev = current.prev;
+            } else {
+                self.tail = current.prev;
             }
             self.length -= 1;
             self.allocator.destroy(current);
