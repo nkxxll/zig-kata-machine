@@ -8,7 +8,7 @@ Zig and brush up on my algorithms so that is a nice project for that.
 
 1. Reimplement the solutions to the algorithms course from Prime.
 2. Make a generation script in the `build.zig`.
-3. Have others use this project and have fun with Zig and algos.
+3. Have others use this project and have fun with Zig and algorithms.
 
 ## Contributions
 
