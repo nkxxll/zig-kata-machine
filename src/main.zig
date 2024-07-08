@@ -12,4 +12,5 @@ comptime {
     _ = @import("./test/test_maze_solver.zig");
     _ = @import("./test/test_bubble_sort.zig");
     _ = @import("./test/test_double_linked_list.zig");
+    _ = @import("./test/test_single_linked_list.zig");
 }
