@@ -105,14 +105,12 @@ pub fn DoubleLinkedList(comptime T: type) type {
             while (true) {
                 const val = current.value;
                 if (val == item) {
-                    if (current.prev != null) {
-                        const prev = current.prev.?;
+                    if (current.prev) |prev| {
                         prev.next = current.next;
                     } else {
                         self.head = current.next;
                     }
-                    if (current.next != null) {
-                        const next = current.next.?;
+                    if (current.next) |next| {
                         next.prev = current.prev;
                     } else {
                         self.tail = current.prev;
@@ -144,14 +142,12 @@ pub fn DoubleLinkedList(comptime T: type) type {
             }
             const val = current.value;
 
-            if (current.prev != null) {
-                const prev = current.prev.?;
+            if (current.prev) |prev| {
                 prev.next = current.next;
             } else {
                 self.head = current.next;
             }
-            if (current.next != null) {
-                const next = current.next.?;
+            if (current.next) |next| {
                 next.prev = current.prev;
             } else {
                 self.tail = current.prev;

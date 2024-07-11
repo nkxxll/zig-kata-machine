@@ -112,8 +112,7 @@ pub fn SingleLinkedList(comptime T: type) type {
             while (true) {
                 const val = current.value;
                 if (val == item) {
-                    if (current.next != null) {
-                        const next = current.next.?;
+                    if (current.next) |next| {
                         tmp.next = next;
                     } else {
                         self.tail = tmp;
@@ -163,8 +162,7 @@ pub fn SingleLinkedList(comptime T: type) type {
             }
             const val = current.value;
 
-            if (current.next != null) {
-                const next = current.next.?;
+            if (current.next) |next| {
                 tmp.next = next;
             } else {
                 self.tail = tmp;
